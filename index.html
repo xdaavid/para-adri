@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>¿Quieres volver a hablar conmigo?</title>
+  <meta name="description" content="Una preguntita con gatitos tristes :(">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#0f172a; --bg2:#1e293b; --card:#0b1220cc; --yes:#22c55e; --no:#ef4444;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      background: radial-gradient(1000px 600px at 50% 0%, var(--bg2), var(--bg1));
+      color:#e5e7eb; display:grid; place-items:center; padding:24px;
+    }
+    .card{
+      width:min(720px,95vw); background:var(--card); border:1px solid #22304d; 
+      border-radius:20px; padding:24px; box-shadow:0 20px 60px #0008; text-align:center;
+      backdrop-filter: blur(8px);
+    }
+    h1{margin:0 0 12px; font-size:clamp(22px,5.5vw,36px); font-weight:800; letter-spacing:.2px}
+
+    .img-wrap{
+      position:relative; width:100%; aspect-ratio: 4/3; border-radius:16px; overflow:hidden;
+      background:#0b1324; border:1px solid #1f2b47;
+    }
+    img#cat{
+      width:100%; height:100%; object-fit:cover; display:block;
+      transition:opacity .25s ease, transform .25s ease;
+    }
+    .fallback{
+      position:absolute; inset:0; display:grid; place-items:center; font-size:64px; opacity:.85;
+    }
+
+    .buttons{
+      display:flex; gap:16px; justify-content:center; align-items:center; margin-top:18px; flex-wrap:wrap;
+      overflow:visible; /* permite que el botón crezca sin recorte */
+    }
+    button{
+      border:none; padding:14px 22px; border-radius:999px; font-weight:700; cursor:pointer; 
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+      font-size:18px;
+      will-change: transform;
+    }
+    #btnSi{ background:linear-gradient(90deg, var(--yes), #34d399); color:#07110a; box-shadow:0 6px 18px #22c55e44; transform-origin:center; }
+    #btnNo{ background:linear-gradient(90deg, #f87171, var(--no)); color:#300; box-shadow:0 6px 18px #ef444444; }
+    button:active{ transform:translateY(1px) scale(.99) }
+
+    .pulse{ animation:pulse .4s ease }
+    @keyframes pulse{ 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
+
+    @media (max-width: 480px){
+      .card{ padding:18px }
+      .buttons{ gap:12px }
+      button{ padding:12px 18px; font-size:17px }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>¿Quieres volver a hablar conmigo?</h1>
+
+    <div class="img-wrap">
+      <img id="cat" alt="Gatito triste" />
+      <div id="fallback" class="fallback" hidden>😿</div>
+    </div>
+
+    <div class="buttons">
+      <button id="btnSi" aria-label="Sí">Sí</button>
+      <button id="btnNo" aria-label="No">No</button>
+    </div>
+  </main>
+
+  <script>
+    
+    const catNumbers = [1,2,3,4,5,6,7];
+
+    const img = document.getElementById('cat');
+    const fallback = document.getElementById('fallback');
+    const btnSi = document.getElementById('btnSi');
+    const btnNo = document.getElementById('btnNo');
+
+    let index = 0;
+    let siScale = 1.00; // crecimiento acumulativo SIN límite
+
+    function tryLoad(sources, done){
+      let i = 0;
+      const loader = new Image();
+      function next(){
+        if(i >= sources.length){
+          done(null);
+          return;
+        }
+        const src = sources[i++] + '?v=' + Date.now(); // evita caché
+        loader.onload = () => done(src);
+        loader.onerror = next;
+        loader.src = src;
+      }
+      next();
+    }
+
+    function showImage(idx){
+      // Oculta el fallback siempre antes de intentar cargar
+      fallback.hidden = true;
+      const n = catNumbers[idx % catNumbers.length];
+      const candidates = [`cats/${n}.jpeg`, `cats/${n}.jpg`];
+      img.style.opacity = .3;
+      tryLoad(candidates, (src)=>{
+        if(src){
+          fallback.hidden = true;
+          img.src = src;
+          img.style.opacity = 1;
+        }else{
+          fallback.hidden = true;
+          img.removeAttribute('src');
+          img.style.opacity = 1;
+        }
+      });
+    }
+
+    btnNo.addEventListener('click', ()=>{
+      index = (index + 1) % catNumbers.length;
+      showImage(index);
+      // Crece sin límite
+      siScale += 0.16;
+      btnSi.style.transform = `scale(${siScale})`;
+      btnSi.classList.add('pulse');
+      setTimeout(()=>btnSi.classList.remove('pulse'), 420);
+      // Asegura visibilidad del botón grande en móviles
+      btnSi.scrollIntoView({behavior:'smooth', block:'center', inline:'center'});
+    });
+
+    btnSi.addEventListener('click', ()=>{
+      const nombre = 'Adriana';
+      window.location.href = `garden.html?nombre=${encodeURIComponent(nombre)}`;
+    });
+
+    // Primera imagen
+    showImage(index);
+  </script>
+</body>
+</html>
